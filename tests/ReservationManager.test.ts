@@ -19,6 +19,51 @@ describe('ReservationManager - Creation', () => {
     manager.createReservation(reservation);
     expect(manager.getReservations()).toContainEqual(reservation);
   });
+
+  it('should throw an error if the end date is not after the start date', () => {
+    const reservation: Reservation = {
+      id: '2',
+      name: 'Invalid Dates',
+      start: new Date('2026-05-10T10:00:00'),
+      end: new Date('2026-05-10T10:00:00'),
+    };
+    expect(() => manager.createReservation(reservation)).toThrow('End date must be after start date');
+  });
+
+  it('should throw an error if the reservation overlaps with an existing one', () => {
+    manager.createReservation({
+      id: '1',
+      name: 'R1',
+      start: new Date('2026-05-10T10:00:00'),
+      end: new Date('2026-05-10T12:00:00'),
+    });
+
+    const r2: Reservation = {
+      id: '2',
+      name: 'Overlapping R2',
+      start: new Date('2026-05-10T11:00:00'),
+      end: new Date('2026-05-10T13:00:00'),
+    };
+    expect(() => manager.createReservation(r2)).toThrow('Reservation overlaps with an existing one');
+  });
+
+  it('should allow a reservation that starts exactly when another ends', () => {
+    manager.createReservation({
+      id: '1',
+      name: 'R1',
+      start: new Date('2026-05-10T10:00:00'),
+      end: new Date('2026-05-10T12:00:00'),
+    });
+
+    const r2: Reservation = {
+      id: '2',
+      name: 'Adjacent R2',
+      start: new Date('2026-05-10T12:00:00'),
+      end: new Date('2026-05-10T14:00:00'),
+    };
+    manager.createReservation(r2);
+    expect(manager.getReservations()).toHaveLength(2);
+  });
 });
 
 describe('ReservationManager - Cancellation', () => {

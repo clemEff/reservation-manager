@@ -4,6 +4,18 @@ export class ReservationManager {
   private reservations: Reservation[] = [];
 
   createReservation(reservation: Reservation): void {
+    if (reservation.end <= reservation.start) {
+      throw new Error('End date must be after start date');
+    }
+
+    const hasOverlap = this.reservations.some(r => {
+      return (reservation.start < r.end && reservation.end > r.start);
+    });
+
+    if (hasOverlap) {
+      throw new Error('Reservation overlaps with an existing one');
+    }
+
     this.reservations.push(reservation);
   }
 
