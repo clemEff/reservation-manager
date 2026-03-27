@@ -26,6 +26,10 @@ export class GestionnaireReservations {
     }
 
     const reservation = this.reservations[index];
+    if (!reservation) {
+      throw new Error('Réservation non trouvée');
+    }
+
     const diffEnMillisecondes = reservation.start.getTime() - dateDemande.getTime();
     const diffEnHeures = diffEnMillisecondes / (1000 * 60 * 60);
 
