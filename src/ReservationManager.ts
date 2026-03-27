@@ -1,48 +1,48 @@
 import type { Reservation } from './types.js';
 
-export class ReservationManager {
+export class GestionnaireReservations {
   private reservations: Reservation[] = [];
 
-  createReservation(reservation: Reservation): void {
+  creerReservation(reservation: Reservation): void {
     if (reservation.end <= reservation.start) {
-      throw new Error('End date must be after start date');
+      throw new Error('La date de fin doit être après la date de début');
     }
 
-    const hasOverlap = this.reservations.some(r => {
+    const aUnChevauchement = this.reservations.some(r => {
       return (reservation.start < r.end && reservation.end > r.start);
     });
 
-    if (hasOverlap) {
-      throw new Error('Reservation overlaps with an existing one');
+    if (aUnChevauchement) {
+      throw new Error('La réservation chevauche une réservation existante');
     }
 
     this.reservations.push(reservation);
   }
 
-  cancelReservation(id: string, requestDate: Date): void {
+  annulerReservation(id: string, dateDemande: Date): void {
     const index = this.reservations.findIndex(r => r.id === id);
     if (index === -1) {
-      throw new Error('Reservation not found');
+      throw new Error('Réservation non trouvée');
     }
 
     const reservation = this.reservations[index];
-    const diffInMilliseconds = reservation.start.getTime() - requestDate.getTime();
-    const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+    const diffEnMillisecondes = reservation.start.getTime() - dateDemande.getTime();
+    const diffEnHeures = diffEnMillisecondes / (1000 * 60 * 60);
 
-    if (diffInHours < 48) {
-      throw new Error('Cancellation must be done at least 48h before start');
+    if (diffEnHeures < 48) {
+      throw new Error("L'annulation doit être faite au moins 48h avant le début");
     }
 
     this.reservations.splice(index, 1);
   }
 
-  searchByDate(date: Date): Reservation[] {
+  rechercherParDate(date: Date): Reservation[] {
     return this.reservations.filter(r => 
       date >= r.start && date < r.end
     );
   }
 
-  getReservations(): Reservation[] {
+  obtenirReservations(): Reservation[] {
     return this.reservations;
   }
 }

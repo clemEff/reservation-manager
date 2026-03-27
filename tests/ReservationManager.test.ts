@@ -1,164 +1,164 @@
-import { ReservationManager } from '../src/ReservationManager.js';
+import { GestionnaireReservations } from '../src/ReservationManager.js';
 import type { Reservation } from '../src/types.js';
 
-describe('ReservationManager - Creation', () => {
-  let manager: ReservationManager;
+describe("GestionnaireReservations - Création", () => {
+  let gestionnaire: GestionnaireReservations;
 
   beforeEach(() => {
-    manager = new ReservationManager();
+    gestionnaire = new GestionnaireReservations();
   });
 
-  it('should create a valid reservation', () => {
+  it("devrait créer une réservation valide", () => {
     const reservation: Reservation = {
-      id: '1',
-      name: 'Test Reservation',
-      start: new Date('2026-05-08T10:00:00'),
-      end: new Date('2026-05-10T10:00:00'),
+      id: "1",
+      name: "Réservation Test",
+      start: new Date("2026-05-08T10:00:00"),
+      end: new Date("2026-05-10T10:00:00"),
     };
 
-    manager.createReservation(reservation);
-    expect(manager.getReservations()).toContainEqual(reservation);
+    gestionnaire.creerReservation(reservation);
+    expect(gestionnaire.obtenirReservations()).toContainEqual(reservation);
   });
 
-  it('should throw an error if the end date is not after the start date', () => {
+  it("devrait lever une erreur si la date de fin n'est pas après la date de début", () => {
     const reservation: Reservation = {
-      id: '2',
-      name: 'Invalid Dates',
-      start: new Date('2026-05-10T10:00:00'),
-      end: new Date('2026-05-10T10:00:00'),
+      id: "2",
+      name: "Dates Invalides",
+      start: new Date("2026-05-10T10:00:00"),
+      end: new Date("2026-05-10T10:00:00"),
     };
-    expect(() => manager.createReservation(reservation)).toThrow('End date must be after start date');
+    expect(() => gestionnaire.creerReservation(reservation)).toThrow("La date de fin doit être après la date de début");
   });
 
-  it('should throw an error if the reservation overlaps with an existing one', () => {
-    manager.createReservation({
-      id: '1',
-      name: 'R1',
-      start: new Date('2026-05-10T10:00:00'),
-      end: new Date('2026-05-10T12:00:00'),
+  it("devrait lever une erreur si la réservation en chevauche une autre", () => {
+    gestionnaire.creerReservation({
+      id: "1",
+      name: "R1",
+      start: new Date("2026-05-10T10:00:00"),
+      end: new Date("2026-05-10T12:00:00"),
     });
 
     const r2: Reservation = {
-      id: '2',
-      name: 'Overlapping R2',
-      start: new Date('2026-05-10T11:00:00'),
-      end: new Date('2026-05-10T13:00:00'),
+      id: "2",
+      name: "R2 en chevauchement",
+      start: new Date("2026-05-10T11:00:00"),
+      end: new Date("2026-05-10T13:00:00"),
     };
-    expect(() => manager.createReservation(r2)).toThrow('Reservation overlaps with an existing one');
+    expect(() => gestionnaire.creerReservation(r2)).toThrow("La réservation chevauche une réservation existante");
   });
 
-  it('should allow a reservation that starts exactly when another ends', () => {
-    manager.createReservation({
-      id: '1',
-      name: 'R1',
-      start: new Date('2026-05-10T10:00:00'),
-      end: new Date('2026-05-10T12:00:00'),
+  it("devrait autoriser une réservation qui commence exactement à la fin d'une autre", () => {
+    gestionnaire.creerReservation({
+      id: "1",
+      name: "R1",
+      start: new Date("2026-05-10T10:00:00"),
+      end: new Date("2026-05-10T12:00:00"),
     });
 
     const r2: Reservation = {
-      id: '2',
-      name: 'Adjacent R2',
-      start: new Date('2026-05-10T12:00:00'),
-      end: new Date('2026-05-10T14:00:00'),
+      id: "2",
+      name: "R2 adjacente",
+      start: new Date("2026-05-10T12:00:00"),
+      end: new Date("2026-05-10T14:00:00"),
     };
-    manager.createReservation(r2);
-    expect(manager.getReservations()).toHaveLength(2);
+    gestionnaire.creerReservation(r2);
+    expect(gestionnaire.obtenirReservations()).toHaveLength(2);
   });
 });
 
-describe('ReservationManager - Cancellation', () => {
-  let manager: ReservationManager;
+describe("GestionnaireReservations - Annulation", () => {
+  let gestionnaire: GestionnaireReservations;
 
   beforeEach(() => {
-    manager = new ReservationManager();
+    gestionnaire = new GestionnaireReservations();
   });
 
-  it('should cancel a reservation if requested at least 48h before start', () => {
-    const start = new Date('2026-05-10T10:00:00');
+  it("devrait annuler une réservation si demandée au moins 48h avant le début", () => {
+    const début = new Date("2026-05-10T10:00:00");
     const reservation: Reservation = {
-      id: '1',
-      name: 'R1',
-      start,
-      end: new Date('2026-05-12T10:00:00'),
+      id: "1",
+      name: "R1",
+      start: début,
+      end: new Date("2026-05-12T10:00:00"),
     };
-    manager.createReservation(reservation);
+    gestionnaire.creerReservation(reservation);
 
-    const requestDate = new Date('2026-05-08T10:00:00'); // Exactly 48h before
+    const dateDemande = new Date("2026-05-08T10:00:00"); // Exactement 48h avant
 
-    manager.cancelReservation('1', requestDate);
-    expect(manager.getReservations()).toHaveLength(0);
+    gestionnaire.annulerReservation("1", dateDemande);
+    expect(gestionnaire.obtenirReservations()).toHaveLength(0);
   });
 
-  it('should throw an error if cancellation is requested less than 48h before start', () => {
-    const start = new Date('2026-05-10T10:00:00');
+  it("devrait lever une erreur si l'annulation est demandée moins de 48h avant le début", () => {
+    const début = new Date("2026-05-10T10:00:00");
     const reservation: Reservation = {
-      id: '1',
-      name: 'R1',
-      start,
-      end: new Date('2026-05-12T10:00:00'),
+      id: "1",
+      name: "R1",
+      start: début,
+      end: new Date("2026-05-12T10:00:00"),
     };
-    manager.createReservation(reservation);
+    gestionnaire.creerReservation(reservation);
 
-    const requestDate = new Date('2026-05-08T10:00:01'); // Less than 48h before
+    const dateDemande = new Date("2026-05-08T10:00:01"); // Moins de 48h avant
 
-    expect(() => manager.cancelReservation('1', requestDate)).toThrow('Cancellation must be done at least 48h before');
+    expect(() => gestionnaire.annulerReservation("1", dateDemande)).toThrow("L'annulation doit être faite au moins 48h avant le début");
   });
 
-  it('should throw an error if the reservation does not exist', () => {
-    const requestDate = new Date();
-    expect(() => manager.cancelReservation('999', requestDate)).toThrow('Reservation not found');
+  it("devrait lever une erreur si la réservation n'existe pas", () => {
+    const dateDemande = new Date();
+    expect(() => gestionnaire.annulerReservation("999", dateDemande)).toThrow("Réservation non trouvée");
   });
 });
 
-describe('ReservationManager - SearchByDate', () => {
-  let manager: ReservationManager;
+describe("GestionnaireReservations - RechercheParDate", () => {
+  let gestionnaire: GestionnaireReservations;
 
   beforeEach(() => {
-    manager = new ReservationManager();
+    gestionnaire = new GestionnaireReservations();
   });
 
-  it('should return active reservations at a given date', () => {
+  it("devrait retourner les réservations actives à une date donnée", () => {
     const r1: Reservation = {
-      id: '1',
-      name: 'R1',
-      start: new Date('2026-05-08T00:00:00'),
-      end: new Date('2026-05-10T00:00:00'),
+      id: "1",
+      name: "R1",
+      start: new Date("2026-05-08T00:00:00"),
+      end: new Date("2026-05-10T00:00:00"),
     };
     const r2: Reservation = {
-      id: '2',
-      name: 'R2',
-      start: new Date('2026-05-10T00:00:00'),
-      end: new Date('2026-05-12T00:00:00'),
+      id: "2",
+      name: "R2",
+      start: new Date("2026-05-10T00:00:00"),
+      end: new Date("2026-05-12T00:00:00"),
     };
-    manager.createReservation(r1);
-    manager.createReservation(r2);
+    gestionnaire.creerReservation(r1);
+    gestionnaire.creerReservation(r2);
 
-    // 9 May is in R1
-    const search1 = new Date('2026-05-09T12:00:00');
-    expect(manager.searchByDate(search1)).toEqual([r1]);
+    // 9 mai est dans R1
+    const recherche1 = new Date("2026-05-09T12:00:00");
+    expect(gestionnaire.rechercherParDate(recherche1)).toEqual([r1]);
 
-    // 11 May is in R2
-    const search2 = new Date('2026-05-11T12:00:00');
-    expect(manager.searchByDate(search2)).toEqual([r2]);
+    // 11 mai est dans R2
+    const recherche2 = new Date("2026-05-11T12:00:00");
+    expect(gestionnaire.rechercherParDate(recherche2)).toEqual([r2]);
 
-    // 7 May is before R1
-    const search3 = new Date('2026-05-07T12:00:00');
-    expect(manager.searchByDate(search3)).toEqual([]);
+    // 7 mai est avant R1
+    const recherche3 = new Date("2026-05-07T12:00:00");
+    expect(gestionnaire.rechercherParDate(recherche3)).toEqual([]);
   });
 
-  it('should handle boundaries correctly (exclusive end)', () => {
+  it("devrait gérer les limites correctement (fin exclusive)", () => {
     const r1: Reservation = {
-      id: '1',
-      name: 'R1',
-      start: new Date('2026-05-08T00:00:00'),
-      end: new Date('2026-05-10T00:00:00'),
+      id: "1",
+      name: "R1",
+      start: new Date("2026-05-08T00:00:00"),
+      end: new Date("2026-05-10T00:00:00"),
     };
-    manager.createReservation(r1);
+    gestionnaire.creerReservation(r1);
 
-    // Exactly at start -> included
-    expect(manager.searchByDate(new Date('2026-05-08T00:00:00'))).toEqual([r1]);
+    // Exactement au début -> inclus
+    expect(gestionnaire.rechercherParDate(new Date("2026-05-08T00:00:00"))).toEqual([r1]);
 
-    // Exactly at end -> excluded (to allow adjacent reservations)
-    expect(manager.searchByDate(new Date('2026-05-10T00:00:00'))).toEqual([]);
+    // Exactement à la fin -> exclu (pour permettre les réservations adjacentes)
+    expect(gestionnaire.rechercherParDate(new Date("2026-05-10T00:00:00"))).toEqual([]);
   });
 });
